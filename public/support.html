@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support | Voxify AI</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h2>
+            <div class="logo-wrapper">
+                <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="var(--secondary)" />
+                            <stop offset="100%" stop-color="var(--primary)" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="8" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                    <rect x="26" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="44" y="55" width="12" height="30" rx="6" fill="url(#wave-gradient)" opacity="0.6" />
+                    <rect x="62" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="80" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                </svg>
+                <div class="logo-text">
+                    <span class="logo-bold">Voxify</span><span class="logo-light">AI</span>
+                </div>
+            </div>
+        </h2>
+        <div class="nav-links">
+            <span id="user-email" style="font-weight: 600; color: var(--text-main); margin-right: 1.5rem;"></span>
+            <a href="#" onclick="logout()">Log out</a>
+        </div>
+    </nav>
+
+    <div class="saas-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="saas-sidebar">
+            <div class="saas-sidebar-nav">
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; margin-top: 1rem;">Platform</div>
+                <a href="/dashboard">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Overview
+                </a>
+                <a href="/call-logs">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    Call Logs
+                </a>
+                
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; margin-top: 2rem;">Account</div>
+                <a href="/subscription">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    Billing & Plan
+                </a>
+                <a href="/settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Settings
+                </a>
+                
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; margin-top: 2rem;">Support</div>
+                <a href="/support" class="active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    Help Center
+                </a>
+            </div>
+            
+            <div style="margin-top: auto; padding-top: 2rem;">
+                <div style="background: var(--bg-page); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+                    <p style="margin:0; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Current Plan</p>
+                    <p style="margin:0; font-size: 1.1rem; font-weight: 700; color: var(--primary);" id="sidebar-plan">Free Trial</p>
+                    <a href="/subscription" style="display: block; margin-top: 1rem; font-size: 0.85rem; color: var(--secondary); font-weight: 600; text-decoration: none;">Upgrade Plan →</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="saas-main">
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Help & Support</h1>
+            <p style="color: var(--text-muted); margin-bottom: 3rem;">Need assistance? Our enterprise support team is available 24/7.</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="card">
+                    <h3 style="margin-top:0;">Contact Support</h3>
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <select class="form-control">
+                            <option>Technical Issue (API, Webhooks)</option>
+                            <option>Billing Question</option>
+                            <option>Feature Request</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea class="form-control" rows="5" placeholder="Describe your issue..." style="width:100%; border:1px solid var(--border); border-radius:8px; padding:1rem; font-family:inherit;"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="alert('Message sent! Support will contact you shortly.')">Submit Ticket</button>
+                </div>
+                
+                <div>
+                    <div class="card" style="margin-bottom: 2rem;">
+                        <h3 style="margin-top:0;">Direct Contact</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 0.5rem;"><strong>Email:</strong> support@voxify.ai</p>
+                        <p style="color: var(--text-muted); margin-bottom: 0.5rem;"><strong>Phone:</strong> +1 (800) 555-VOXI</p>
+                        <p style="color: var(--text-muted);"><strong>Hours:</strong> 24/7 for Pro and Enterprise clients</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 style="margin-top:0;">Legal</h3>
+                        <ul style="list-style:none; padding:0; margin:0;">
+                            <li style="margin-bottom: 0.5rem;"><a href="/terms" style="color: var(--secondary); text-decoration:none;">Terms & Conditions</a></li>
+                            <li><a href="/privacy" style="color: var(--secondary); text-decoration:none;">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function fetchUserData() {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const currentUser = await res.json();
+                    document.getElementById('user-email').innerText = currentUser.emailOrPhone;
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (err) {
+                window.location.href = '/login';
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+
+        window.onload = fetchUserData;
+    </script>
+</body>
+</html>

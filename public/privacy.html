@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | Voxify AI</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background: white;">
+    <nav class="navbar" style="position: static; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h2>
+            <div class="logo-wrapper">
+                <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="var(--secondary)" />
+                            <stop offset="100%" stop-color="var(--primary)" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="8" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                    <rect x="26" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="44" y="55" width="12" height="30" rx="6" fill="url(#wave-gradient)" opacity="0.6" />
+                    <rect x="62" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="80" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                </svg>
+                <div class="logo-text">
+                    <span class="logo-bold">Voxify</span><span class="logo-light">AI</span>
+                </div>
+            </div>
+        </h2>
+        <div class="nav-links" id="auth-links">
+            <a href="/login" class="btn btn-primary" style="color: white; margin-left: 0;">Log In</a>
+        </div>
+    </nav>
+
+    <div style="background: linear-gradient(135deg, var(--bg-soft) 0%, #ffffff 100%); padding: 4rem 2rem 8rem 2rem; text-align: center; border-bottom: 1px solid var(--border);">
+        <h1 style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">Privacy Policy</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">We take your privacy seriously. Here is a clear breakdown of how we collect, use, and protect your information.</p>
+    </div>
+
+    <div class="container" style="max-width: 800px; padding: 0 2rem; margin-top: -4rem; position: relative; z-index: 10;">
+        <div class="card" style="padding: 3rem; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid var(--border); border-radius: 12px; background: white; margin-bottom: 4rem;">
+            <p style="color: var(--secondary); margin-bottom: 2rem; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em;">Last Updated: July 2026</p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">1. Data Collection</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">We collect information you provide directly to us, including your email address, phone number, and billing details. We also collect the audio recordings and transcripts of calls made via our AI agents.</p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">2. Use of Data</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">We use the collected data to provide, maintain, and improve our services. Call transcripts are processed by third-party LLM providers (e.g., Groq) solely for the purpose of executing the AI voice agent logic.</p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">3. Data Protection</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">We implement robust security measures to protect your personal information. Call recordings are stored securely and can only be accessed by the account owner and authorized administrators.</p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">4. Contact Us</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">If you have any questions about this Privacy Policy, please contact us at <strong>privacy@voxify.ai</strong>.</p>
+        </div>
+    </div>
+
+    <script>
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    document.getElementById('auth-links').innerHTML = `
+                        <a href="/dashboard" class="btn btn-primary" style="color: white; margin-left: 0; padding: 0.5rem 1.5rem;">Back to Dashboard</a>
+                    `;
+                }
+            } catch(e) {}
+        }
+        window.onload = checkAuth;
+    </script>
+</body>
+</html>

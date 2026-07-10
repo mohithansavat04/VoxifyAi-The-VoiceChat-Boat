@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Voxify AI</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    
+    <div class="card" style="width: 100%; max-width: 450px; text-align: center;">
+        <div class="logo-wrapper" style="justify-content: center; margin-bottom: 1.5rem;">
+            <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#0A2540" />
+                        <stop offset="100%" stop-color="#635BFF" />
+                    </linearGradient>
+                </defs>
+                <rect x="8" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                <rect x="26" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                <rect x="44" y="55" width="12" height="30" rx="6" fill="url(#wave-gradient)" opacity="0.6" />
+                <rect x="62" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                <rect x="80" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+            </svg>
+            <div class="logo-text">
+                <span class="logo-bold">Voxify</span><span class="logo-light">AI</span>
+            </div>
+        </div>
+        <h2 style="margin-bottom: 0.5rem; color: var(--primary);">Create Account</h2>
+        <p style="margin-bottom: 2rem; color: var(--text-muted);">Start your 10-minute free trial.</p>
+
+        <form id="signupForm" style="text-align: left;">
+            <div class="form-group">
+                <label for="emailOrPhone">Email or Phone Number</label>
+                <input type="text" id="emailOrPhone" required placeholder="name@company.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="••••••••" onkeyup="validatePassword()">
+                <div id="passwordFeedback" class="validation-msg">Password must be at least 8 characters with 1 uppercase and 1 number.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="industry">Industry</label>
+                <select id="industry" required>
+                    <option value="Health">Health</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Real Estate">Real Estate</option>
+                    <option value="Education">Education</option>
+                    <option value="General Business" selected>General Business</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="submitBtn">Sign Up</button>
+            <p id="errorMsg" style="color: var(--danger); text-align: center; margin-top: 1rem;"></p>
+        </form>
+
+        <p style="margin-top: 2rem; font-size: 0.9rem;">
+            Already have an account? <a href="/login" style="color: var(--primary); text-decoration: none;">Log in</a>
+        </p>
+    </div>
+
+    <script>
+        function validatePassword() {
+            const pwd = document.getElementById('password').value;
+            const feedback = document.getElementById('passwordFeedback');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            const hasUpper = /[A-Z]/.test(pwd);
+            const hasNumber = /\d/.test(pwd);
+            const isLong = pwd.length >= 8;
+
+            if (pwd.length === 0) {
+                feedback.style.display = 'none';
+                submitBtn.disabled = false;
+                return true;
+            }
+
+            if (hasUpper && hasNumber && isLong) {
+                feedback.textContent = 'Strong password.';
+                feedback.className = 'validation-msg success';
+                submitBtn.disabled = false;
+                return true;
+            } else {
+                feedback.textContent = 'Must be 8+ chars with 1 uppercase and 1 number.';
+                feedback.className = 'validation-msg error';
+                submitBtn.disabled = true;
+                return false;
+            }
+        }
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!validatePassword()) return;
+
+            const emailOrPhone = document.getElementById('emailOrPhone').value;
+            const password = document.getElementById('password').value;
+            const industry = document.getElementById('industry').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            try {
+                const res = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emailOrPhone, password, industry })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    errorMsg.textContent = data.error || 'Signup failed';
+                }
+            } catch (err) {
+                errorMsg.textContent = 'An error occurred. Please try again.';
+            }
+        });
+    </script>
+</body>
+</html>

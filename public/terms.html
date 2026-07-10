@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service | Voxify AI</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background: white;">
+    <nav class="navbar" style="position: static; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h2>
+            <div class="logo-wrapper">
+                <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="var(--secondary)" />
+                            <stop offset="100%" stop-color="var(--primary)" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="8" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                    <rect x="26" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="44" y="55" width="12" height="30" rx="6" fill="url(#wave-gradient)" opacity="0.6" />
+                    <rect x="62" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="80" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                </svg>
+                <div class="logo-text">
+                    <span class="logo-bold">Voxify</span><span class="logo-light">AI</span>
+                </div>
+            </div>
+        </h2>
+        <div class="nav-links" id="auth-links">
+            <a href="/login" class="btn btn-primary" style="color: white; margin-left: 0;">Log In</a>
+        </div>
+    </nav>
+
+    <div style="background: linear-gradient(135deg, var(--bg-soft) 0%, #ffffff 100%); padding: 4rem 2rem 8rem 2rem; text-align: center; border-bottom: 1px solid var(--border);">
+        <h1 style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">Terms of Service</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Everything you need to know about how we operate, protect your data, and deliver our AI voice services.</p>
+    </div>
+
+    <div class="container" style="max-width: 800px; padding: 0 2rem; margin-top: -4rem; position: relative; z-index: 10;">
+        <div class="card" style="padding: 3rem; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid var(--border); border-radius: 12px; background: white; margin-bottom: 4rem;">
+            <p style="color: var(--secondary); margin-bottom: 2rem; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em;">Last Updated: July 2026</p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">1. Acceptance of Terms</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">By accessing or using the Voxify AI SaaS platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not use our services.</p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">2. Description of Service</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">Voxify AI provides artificial intelligence voice calling agents designed to integrate with CRMs (e.g., HubSpot, GoHighLevel). We charge based on minute consumption as dictated by your subscription plan.</p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">3. Acceptable Use</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">You agree not to use Voxify AI to:
+                <br>- Violate any local, state, or federal telemarketing laws (including TCPA regulations).
+                <br>- Impersonate any person or entity without authorization.
+                <br>- Spam, harass, or defraud individuals.
+                <br><br>Voxify reserves the right to immediately suspend any account found in violation of these rules.
+            </p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">4. Billing and Refunds</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">Subscriptions are billed monthly. Trial minutes are non-refundable. Additional minutes purchased via our billing portal are non-refundable once consumed.</p>
+
+            <h3 style="color: var(--primary); font-size: 1.4rem; margin-top: 2rem; margin-bottom: 1rem;">5. Limitation of Liability</h3>
+            <p style="line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.05rem;">Voxify AI is provided "as is". We are not liable for any lost revenue, compliance fines, or damages resulting from the use of our AI voice agents.</p>
+        </div>
+    </div>
+
+    <script>
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    document.getElementById('auth-links').innerHTML = `
+                        <a href="/dashboard" class="btn btn-primary" style="color: white; margin-left: 0; padding: 0.5rem 1.5rem;">Back to Dashboard</a>
+                    `;
+                }
+            } catch(e) {}
+        }
+        window.onload = checkAuth;
+    </script>
+</body>
+</html>

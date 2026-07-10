@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Voxify AI</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h2>
+            <div class="logo-wrapper">
+                <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="var(--secondary)" />
+                            <stop offset="100%" stop-color="var(--primary)" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="8" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                    <rect x="26" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="44" y="55" width="12" height="30" rx="6" fill="url(#wave-gradient)" opacity="0.6" />
+                    <rect x="62" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="80" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                </svg>
+                <div class="logo-text">
+                    <span class="logo-bold">Voxify</span><span class="logo-light">AI</span>
+                </div>
+            </div>
+        </h2>
+        <div class="nav-links">
+            <span id="user-email" style="font-weight: 600; color: var(--text-main); margin-right: 1.5rem;"></span>
+            <a href="#" id="admin-link" style="display: none; color: var(--secondary); font-weight: 700;">Super Admin Panel</a>
+            <a href="#" onclick="logout()">Log out</a>
+        </div>
+    </nav>
+
+    <div class="saas-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="saas-sidebar">
+            <div class="saas-sidebar-nav">
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; margin-top: 1rem;">Platform</div>
+                <a href="/dashboard" class="active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Overview
+                </a>
+                <a href="/call-logs">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    Call Logs
+                </a>
+                
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; margin-top: 2rem;">Account</div>
+                <a href="/subscription">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    Billing & Plan
+                </a>
+                <a href="/settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Settings
+                </a>
+                
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; margin-top: 2rem;">Support</div>
+                <a href="/support">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    Help Center
+                </a>
+            </div>
+            
+            <div style="margin-top: auto; padding-top: 2rem;">
+                <div style="background: var(--bg-page); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+                    <p style="margin:0; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Current Plan</p>
+                    <p style="margin:0; font-size: 1.1rem; font-weight: 700; color: var(--primary);" id="sidebar-plan">Free Trial</p>
+                    <div style="margin-top: 0.5rem; background: #E6EBF1; border-radius: 4px; height: 6px; overflow: hidden;">
+                        <div style="background: var(--secondary); height: 100%; width: 50%;"></div>
+                    </div>
+                    <a href="/subscription" style="display: block; margin-top: 1rem; font-size: 0.85rem; color: var(--secondary); font-weight: 600; text-decoration: none;">Upgrade Plan →</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="saas-main">
+            <h1 style="font-size: 2.5rem; margin-bottom: 2rem;">
+                Overview
+            </h1>
+            
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Available Minutes</div>
+                    <div class="stat-value"><span id="minutes-display">...</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Industry Profile</div>
+                    <div class="stat-value" style="font-size: 1.8rem;" id="industry-display">...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Qualification Rate</div>
+                    <div class="stat-value" id="qual-rate-display">...</div>
+                </div>
+            </div>
+
+            <div style="display: block;">
+                <!-- Qualification Configuration -->
+                <div class="card" style="width: 100%;">
+                    <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        Qualification Criteria
+                        <button class="btn btn-primary" onclick="updateQuestions()" id="update-btn" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Save Changes</button>
+                    </h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Define what the AI agent should extract during the call.</p>
+                    
+                    <div id="questions-container">
+                        <!-- Questions will be injected here -->
+                    </div>
+                    
+                    <button class="btn" style="width: 100%; margin-top: 1rem; border: 1px dashed var(--secondary); color: var(--secondary);" onclick="addQuestionField()">+ Add Criterion</button>
+                    <div id="q-msg" class="validation-msg text-center mt-4"></div>
+                </div>
+
+                <!-- Telecom Configuration -->
+                <div class="card" style="margin-top: 2rem; width: 100%;">
+                    <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        Telecom Provider (BYOT)
+                        <button class="btn btn-primary" onclick="updateTelecom()" id="telecom-btn" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Save Settings</button>
+                    </h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Select your telecom provider and enter your API keys. You will be billed by them directly for call minutes.</p>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Active Provider</label>
+                        <select id="telecom-provider" class="q-input" style="width: 100%; padding: 0.75rem;" onchange="toggleTelecomFields()">
+                            <option value="browser">Browser Only (Testing)</option>
+                            <option value="twilio">Twilio</option>
+                            <option value="exotel">Exotel</option>
+                        </select>
+                    </div>
+
+                    <!-- Twilio Fields -->
+                    <div id="twilio-fields" style="display: none; background: var(--bg-page); padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Twilio Account SID</label>
+                            <input type="text" id="twilio-sid" class="q-input" style="width: 100%;" placeholder="AC...">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Twilio Auth Token</label>
+                            <input type="password" id="twilio-token" class="q-input" style="width: 100%;" placeholder="Enter Token">
+                        </div>
+                    </div>
+
+                    <!-- Exotel Fields -->
+                    <div id="exotel-fields" style="display: none; background: var(--bg-page); padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Exotel Account SID</label>
+                            <input type="text" id="exotel-sid" class="q-input" style="width: 100%;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Exotel API Key</label>
+                            <input type="text" id="exotel-key" class="q-input" style="width: 100%;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Exotel API Token</label>
+                            <input type="password" id="exotel-token" class="q-input" style="width: 100%;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Exotel Subdomain</label>
+                            <input type="text" id="exotel-subdomain" class="q-input" style="width: 100%;" placeholder="e.g. api.exotel.com">
+                        </div>
+                    </div>
+
+                    <div id="telecom-msg" class="validation-msg text-center mt-4"></div>
+                </div>
+
+                <!-- Browser Test Call -->
+                <div class="card" style="margin-top: 2rem; border-top: 4px solid var(--secondary);">
+                    <h2 style="margin-bottom: 1rem;">Test AI Call (Browser)</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Simulate an outbound call directly through your microphone without using Twilio or real phone numbers.</p>
+                    
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <button id="start-call-btn" class="btn btn-primary" onclick="startBrowserCall()">Start Test Call</button>
+                        <button id="end-call-btn" class="btn" style="border-color: var(--danger); color: var(--danger); display: none;" onclick="endBrowserCall()">End Call</button>
+                    </div>
+                    
+                    <div id="call-transcript" style="background: var(--bg-page); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); min-height: 150px; max-height: 300px; overflow-y: auto; font-size: 0.9rem; font-family: monospace;">
+                        <div style="color: var(--text-muted);">Live transcript will appear here when you start the call...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        async function fetchUserData() {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    currentUser = data;
+                    document.getElementById('user-email').innerText = data.emailOrPhone;
+                    document.getElementById('sidebar-plan').innerText = data.subscriptionPlan || 'Free Trial';
+                    document.getElementById('minutes-display').innerText = data.trialMinutes;
+                    document.getElementById('industry-display').innerText = data.industry;
+                    
+                   if (data.questions && data.questions.length > 0) {
+                    data.questions.forEach((q, i) => addQuestionField(q, i + 1));
+                } else {
+                    addQuestionField('Are you interested in learning about our new solutions?', 1);
+                }
+
+                if (data.telecomProvider) {
+                    document.getElementById('telecom-provider').value = data.telecomProvider;
+                }
+                if (data.telecomCredentials) {
+                    document.getElementById('twilio-sid').value = data.telecomCredentials.twilioAccountSid || '';
+                    document.getElementById('twilio-token').value = data.telecomCredentials.twilioAuthToken || '';
+                    document.getElementById('exotel-sid').value = data.telecomCredentials.exotelAccountSid || '';
+                    document.getElementById('exotel-key').value = data.telecomCredentials.exotelApiKey || '';
+                    document.getElementById('exotel-token').value = data.telecomCredentials.exotelApiToken || '';
+                    document.getElementById('exotel-subdomain').value = data.telecomCredentials.exotelSubdomain || '';
+                }
+                toggleTelecomFields();
+
+                if (data.isAdmin) {
+                    document.getElementById('admin-link').style.display = 'inline-block';
+                    document.getElementById('admin-link').href = '/admin';
+                }
+                    fetchCallHistory();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (err) {
+                console.error(err);
+                window.location.href = '/login';
+            }
+        }
+
+        function toggleTelecomFields() {
+            const provider = document.getElementById('telecom-provider').value;
+            document.getElementById('twilio-fields').style.display = provider === 'twilio' ? 'block' : 'none';
+            document.getElementById('exotel-fields').style.display = provider === 'exotel' ? 'block' : 'none';
+        }
+
+        async function updateTelecom() {
+            const telecomProvider = document.getElementById('telecom-provider').value;
+            const telecomCredentials = {
+                twilioAccountSid: document.getElementById('twilio-sid').value,
+                twilioAuthToken: document.getElementById('twilio-token').value,
+                exotelAccountSid: document.getElementById('exotel-sid').value,
+                exotelApiKey: document.getElementById('exotel-key').value,
+                exotelApiToken: document.getElementById('exotel-token').value,
+                exotelSubdomain: document.getElementById('exotel-subdomain').value
+            };
+            
+            const msg = document.getElementById('telecom-msg');
+            const btn = document.getElementById('telecom-btn');
+
+            btn.innerText = 'Saving...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/auth/update-telecom', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telecomProvider, telecomCredentials })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    msg.innerText = 'Telecom settings saved!';
+                    msg.className = 'validation-msg success';
+                } else {
+                    msg.innerText = data.error || 'Update failed.';
+                    msg.className = 'validation-msg error';
+                }
+            } catch (err) {
+                msg.innerText = 'Network error.';
+                msg.className = 'validation-msg error';
+            }
+
+            btn.innerText = 'Save Settings';
+            btn.disabled = false;
+        }
+
+        async function fetchCallHistory() {
+            try {
+                const res = await fetch('/api/v1/calls');
+                if (res.ok) {
+                    const calls = await res.json();
+                    
+                    let qualified = 0;
+                    let totalExtractable = 0;
+
+                    calls.forEach(call => {
+                        if (call.extractedData) {
+                            totalExtractable++;
+                            const isQualified = currentUser.questions.every(q => {
+                                const key = Object.keys(call.extractedData).find(k => k.toLowerCase().includes(q.toLowerCase().substring(0, 5)));
+                                return key && call.extractedData[key] && call.extractedData[key].toLowerCase() !== 'unknown';
+                            });
+                            if (isQualified) qualified++;
+                        }
+                    });
+
+                    const rate = totalExtractable > 0 ? Math.round((qualified / totalExtractable) * 100) : 0;
+                    document.getElementById('qual-rate-display').innerText = rate + '%';
+                }
+            } catch (e) {
+                console.error('Error fetching call history', e);
+            }
+        }
+
+        function renderQuestions(questions) {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            if (!questions || questions.length === 0) {
+                questions = ['What is the user name?'];
+            }
+            questions.forEach((q, i) => addQuestionField(q, i + 1));
+        }
+
+        function addQuestionField(value = '', num = null) {
+            const container = document.getElementById('questions-container');
+            const index = num || container.children.length + 1;
+            
+            if (container.children.length >= 10) {
+                alert('Maximum 10 criteria allowed.');
+                return;
+            }
+
+            const div = document.createElement('div');
+            div.className = 'q-card q-input';
+            div.innerHTML = `
+                <div class="q-card-number">${index}</div>
+                <input type="text" class="question-val" placeholder="e.g., What is their budget?" value="${value}">
+                <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="this.parentElement.remove(); updateNumbers();">Remove</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateNumbers() {
+            const container = document.getElementById('questions-container');
+            Array.from(container.children).forEach((child, idx) => {
+                child.querySelector('.q-card-number').innerText = idx + 1;
+            });
+        }
+
+        async function updateQuestions() {
+            const inputs = document.querySelectorAll('.question-val');
+            const questions = Array.from(inputs).map(input => input.value.trim()).filter(val => val !== '');
+            const msg = document.getElementById('q-msg');
+            const btn = document.getElementById('update-btn');
+
+            btn.innerText = 'Saving...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/auth/update-questions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ questions })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    msg.innerText = 'Criteria saved successfully!';
+                    msg.className = 'validation-msg success';
+                } else {
+                    msg.innerText = data.error;
+                    msg.className = 'validation-msg error';
+                }
+            } catch (err) {
+                msg.innerText = 'Network error.';
+                msg.className = 'validation-msg error';
+            }
+
+            btn.innerText = 'Save Changes';
+            btn.disabled = false;
+        }
+
+        function copyApiKey() {
+            // Function no longer needed on this page, but kept in case
+            alert('API Key copied to clipboard!');
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+
+        let ws;
+        let mediaRecorder;
+        let audioContext;
+
+        async function startBrowserCall() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                    }
+                });
+                document.getElementById('start-call-btn').style.display = 'none';
+                document.getElementById('end-call-btn').style.display = 'inline-block';
+                const transcriptDiv = document.getElementById('call-transcript');
+                transcriptDiv.innerHTML = '<div style="color: var(--secondary); font-weight: bold; margin-bottom: 1rem;">Connecting to AI Engine...</div>';
+
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                ws = new WebSocket(`${protocol}//${window.location.host}/`);
+                
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                ws.onopen = () => {
+                    transcriptDiv.innerHTML += '<div style="color: var(--primary); font-weight: bold; margin-bottom: 1rem;">Connected! AI is speaking...</div>';
+                    ws.send(JSON.stringify({ type: 'start' }));
+
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+                            ws.send(event.data);
+                        }
+                    };
+                    mediaRecorder.start(250); 
+                };
+
+                ws.onmessage = async (event) => {
+                    if (typeof event.data === 'string') {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'transcript') {
+                            const color = data.role === 'ai' ? 'var(--primary)' : 'var(--text-main)';
+                            const name = data.role === 'ai' ? 'AI' : 'You';
+                            transcriptDiv.innerHTML += `<div style="margin-top: 0.5rem;"><strong style="color: ${color};">${name}:</strong> ${data.text}</div>`;
+                            transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+                        } else if (data.type === 'clear_audio') {
+                            if (window.currentAiSource) {
+                                try { window.currentAiSource.stop(); } catch(e) {}
+                                window.currentAiSource = null;
+                            }
+                        } else if (data.type === 'call_summary') {
+                            transcriptDiv.innerHTML += `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);"><strong style="color: var(--secondary);">Call Completed.</strong><br>Duration: ${data.durationMinutes} min.<br>Extracted: <pre>${JSON.stringify(data.extractedData, null, 2)}</pre></div>`;
+                            document.getElementById('minutes-display').innerText = data.trialMinutesLeft;
+                            if (currentUser) currentUser.trialMinutes = data.trialMinutesLeft;
+                            setTimeout(endBrowserCall, 2000);
+                        }
+                    } else {
+                        const arrayBuffer = await event.data.arrayBuffer();
+                        audioContext.decodeAudioData(arrayBuffer, (buffer) => {
+                            if (window.currentAiSource) {
+                                try { window.currentAiSource.stop(); } catch(e) {}
+                            }
+                            const source = audioContext.createBufferSource();
+                            window.currentAiSource = source;
+                            source.buffer = buffer;
+                            source.connect(audioContext.destination);
+                            source.start(0);
+                        });
+                    }
+                };
+
+                ws.onclose = () => {
+                    if (document.getElementById('start-call-btn').style.display === 'none') {
+                        endBrowserCall();
+                    }
+                };
+
+            } catch (err) {
+                console.error('Error starting call:', err);
+                alert('Could not access microphone or connect to server.');
+            }
+        }
+
+        function endBrowserCall() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'end_call' }));
+                setTimeout(() => ws.close(), 500);
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+            document.getElementById('start-call-btn').style.display = 'inline-block';
+            document.getElementById('end-call-btn').style.display = 'none';
+        }
+
+        window.onload = fetchUserData;
+    </script>
+</body>
+</html>

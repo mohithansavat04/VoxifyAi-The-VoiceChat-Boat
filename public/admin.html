@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin | Voxify AI</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h2>
+            <div class="logo-wrapper">
+                <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="var(--secondary)" />
+                            <stop offset="100%" stop-color="var(--primary)" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="8" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                    <rect x="26" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="44" y="55" width="12" height="30" rx="6" fill="url(#wave-gradient)" opacity="0.6" />
+                    <rect x="62" y="35" width="12" height="50" rx="6" fill="url(#wave-gradient)" opacity="0.8" />
+                    <rect x="80" y="15" width="12" height="70" rx="6" fill="url(#wave-gradient)" opacity="1.0" />
+                </svg>
+                <div class="logo-text">
+                    <span class="logo-bold">Voxify</span><span class="logo-light" style="color:var(--secondary);">Admin</span>
+                </div>
+            </div>
+        </h2>
+        <div class="nav-links">
+            <a href="/dashboard">Back to App</a>
+        </div>
+    </nav>
+
+    <div class="saas-layout">
+        <aside class="saas-sidebar">
+            <div class="saas-sidebar-nav">
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; margin-top: 1rem;">Admin Controls</div>
+                <a href="#" class="active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    Command Center
+                </a>
+                <a href="#">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Client Database
+                </a>
+                <a href="#">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    Revenue & Billing
+                </a>
+            </div>
+        </aside>
+
+        <main class="saas-main">
+            <h1 style="font-size: 2.5rem; margin-bottom: 2rem;">Platform <span style="color:var(--secondary);">Overview</span></h1>
+            
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Active Clients</div>
+                    <div class="stat-value" id="stat-clients">...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Platform Calls</div>
+                    <div class="stat-value" id="stat-calls">...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Minutes Consumed</div>
+                    <div class="stat-value" id="stat-minutes">...</div>
+                </div>
+                <div class="stat-card" style="border: 2px solid var(--secondary); background: rgba(99, 91, 255, 0.02);">
+                    <div class="stat-title" style="color:var(--secondary);">Estimated MRR (₹)</div>
+                    <div class="stat-value" id="stat-mrr">...</div>
+                </div>
+            </div>
+
+            <h2 style="margin-bottom: 1.5rem; margin-top: 3rem;">Client Management</h2>
+            <div class="card" style="padding:0; overflow:hidden;">
+                <table class="admin-table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="padding:1rem;">Account Email / Phone</th>
+                            <th>Status</th>
+                            <th>Subscription</th>
+                            <th>Balance (Mins)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-tbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Client Detail Modal -->
+    <div id="client-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+        <div class="card" style="width:100%; max-width:800px; max-height:90vh; overflow-y:auto;">
+            <h2 id="modal-email" style="margin-top:0;">client@email.com</h2>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom: 2rem;">
+                <div style="background:var(--bg-soft); padding:1rem; border-radius:8px;">
+                    <strong style="display:block; margin-bottom:0.5rem;">Account Status</strong>
+                    <select id="modal-status" class="form-control" style="width:100%; padding:0.5rem;" onchange="updateClientStatus()">
+                        <option value="Active">Active</option>
+                        <option value="Suspended">Suspended (Blocked)</option>
+                    </select>
+                </div>
+                <div style="background:var(--bg-soft); padding:1rem; border-radius:8px;">
+                    <strong style="display:block; margin-bottom:0.5rem;">Subscription Plan</strong>
+                    <select id="modal-plan" class="form-control" style="width:100%; padding:0.5rem;" onchange="updateClientPlan()">
+                        <option value="Free Trial">Free Trial</option>
+                        <option value="Pro">Pro (₹2,999/mo)</option>
+                        <option value="Enterprise">Enterprise</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color:var(--primary); margin-bottom:0.5rem;">Manual Credit</h3>
+                <div style="display:flex; gap:1rem;">
+                    <input type="number" id="manual-mins" placeholder="Enter minutes to add..." style="flex:1; padding:0.8rem; border:1px solid var(--border); border-radius:8px;">
+                    <button class="btn btn-primary" onclick="creditMinutes()">Add Minutes</button>
+                </div>
+            </div>
+
+            <h3 style="color:var(--secondary); margin-bottom:1rem;">Call Audit Log</h3>
+            <div style="background:var(--bg-soft); border:1px solid var(--border); border-radius:8px; max-height:300px; overflow-y:auto; padding:1rem;" id="modal-calls">
+                Loading calls...
+            </div>
+
+            <div style="margin-top:2rem; text-align:right;">
+                <button class="btn" onclick="closeModal()">Close Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allClients = [];
+        let currentSelectedClientId = null;
+
+        async function loadAdminData() {
+            try {
+                const statRes = await fetch('/api/admin/stats', { cache: 'no-store' });
+                if (!statRes.ok) throw new Error('Not authorized');
+                const stats = await statRes.json();
+                
+                document.getElementById('stat-clients').innerText = stats.totalClients;
+                document.getElementById('stat-calls').innerText = stats.totalCalls.toLocaleString();
+                document.getElementById('stat-minutes').innerText = stats.totalMinutesConsumed.toLocaleString();
+                document.getElementById('stat-mrr').innerText = '₹' + stats.estimatedMRR.toLocaleString();
+
+                const clientRes = await fetch('/api/admin/clients', { cache: 'no-store' });
+                allClients = await clientRes.json();
+                
+                const tbody = document.getElementById('clients-tbody');
+                tbody.innerHTML = '';
+
+                allClients.forEach(c => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid var(--border)';
+                    tr.innerHTML = `
+                        <td style="padding:1rem;"><strong>${c.emailOrPhone}</strong> ${c.isAdmin ? '<span style="color:var(--secondary);font-size:0.8rem;">(Admin)</span>' : ''}</td>
+                        <td style="padding:1rem;">
+                            <span style="background:${c.status==='Active'?'#D1FAE5':'#FEE2E2'}; color:${c.status==='Active'?'#047857':'#B91C1C'}; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight:600;">
+                                ${c.status}
+                            </span>
+                        </td>
+                        <td style="padding:1rem;">${c.subscriptionPlan}</td>
+                        <td style="padding:1rem;"><strong>${c.trialMinutes}</strong></td>
+                        <td style="padding:1rem;">
+                            <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="openModal('${c._id}')">Manage</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                alert('Access Denied. You must be a Super Admin. Error: ' + err.message);
+                window.location.href = '/dashboard';
+            }
+        }
+
+        async function openModal(id) {
+            const client = allClients.find(c => c._id === id);
+            if(!client) return;
+            currentSelectedClientId = id;
+
+            document.getElementById('modal-email').innerText = client.emailOrPhone;
+            document.getElementById('modal-status').value = client.status || 'Active';
+            document.getElementById('modal-plan').value = client.subscriptionPlan || 'Free Trial';
+            document.getElementById('client-modal').style.display = 'flex';
+
+            // Load Calls
+            const callsDiv = document.getElementById('modal-calls');
+            callsDiv.innerHTML = 'Loading calls...';
+            try {
+                const res = await fetch(`/api/admin/client/${id}/calls`);
+                const calls = await res.json();
+                if (calls.length === 0) {
+                    callsDiv.innerHTML = '<p style="color:var(--text-muted);">No calls made yet.</p>';
+                    return;
+                }
+                let html = '';
+                calls.forEach(call => {
+                    html += `
+                        <div style="background:#FFF; padding:1rem; border-radius:8px; border:1px solid var(--border); margin-bottom:1rem;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                                <strong>${call.targetPhone}</strong>
+                                <span style="font-size:0.8rem; color:var(--text-muted);">${new Date(call.createdAt).toLocaleString()}</span>
+                            </div>
+                            <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:0.5rem;">Duration: ${call.durationMinutes} mins | Status: ${call.status}</div>
+                            <div style="background:var(--bg-soft); padding:1rem; border-radius:8px; border:1px solid var(--border); max-height: 200px; overflow-y:auto;">
+                                ${Object.keys(call.extractedData || {}).length > 0 ? 
+                                    Object.entries(call.extractedData).map(([q,a]) => `<div style="margin-bottom: 0.5rem;"><strong style="color:var(--text-main); font-size:0.85rem; display:block;">Q: ${q}</strong><span style="color:var(--secondary); font-size:0.85rem;">A: ${a}</span></div>`).join('') 
+                                    : '<span style="color:var(--text-muted); font-size: 0.85rem;">No data extracted</span>'}
+                            </div>
+                        </div>
+                    `;
+                });
+                callsDiv.innerHTML = html;
+            } catch (e) {
+                callsDiv.innerHTML = 'Failed to load calls.';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('client-modal').style.display = 'none';
+        }
+
+        async function updateClientStatus() {
+            const status = document.getElementById('modal-status').value;
+            try {
+                const res = await fetch('/api/admin/client/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clientId: currentSelectedClientId, status })
+                });
+                if(res.ok) {
+                    loadAdminData(); // refresh background
+                } else {
+                    alert((await res.json()).error);
+                }
+            } catch (e) { alert('Error updating status'); }
+        }
+
+        async function updateClientPlan() {
+            const subscriptionPlan = document.getElementById('modal-plan').value;
+            try {
+                const res = await fetch('/api/admin/client/subscription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clientId: currentSelectedClientId, subscriptionPlan })
+                });
+                if(res.ok) {
+                    loadAdminData(); // refresh background
+                } else {
+                    alert((await res.json()).error);
+                }
+            } catch (e) { alert('Error updating plan'); }
+        }
+
+        async function creditMinutes() {
+            const minutes = document.getElementById('manual-mins').value;
+            if (!minutes || isNaN(minutes)) return;
+
+            try {
+                const res = await fetch('/api/admin/credit-minutes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clientId: currentSelectedClientId, minutes })
+                });
+                if (res.ok) {
+                    document.getElementById('manual-mins').value = '';
+                    alert('Successfully added minutes!');
+                    loadAdminData(); // refresh background table
+                } else {
+                    alert('Error: ' + (await res.json()).error);
+                }
+            } catch (err) { alert('Error crediting minutes.'); }
+        }
+
+        window.onload = loadAdminData;
+    </script>
+</body>
+</html>
