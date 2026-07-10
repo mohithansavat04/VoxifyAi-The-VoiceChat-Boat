@@ -47,7 +47,7 @@ router.post('/v1/call', authenticateApiKey, async (req, res) => {
 
         const provider = client.telecomProvider || 'twilio';
         const creds = client.telecomCredentials || {};
-        const ngrokUrl = process.env.NGROK_URL;
+        const baseUrl = process.env.BASE_URL || process.env.NGROK_URL || 'https://voxifyai-the-voicechat-boat.onrender.com';
         
         // Create an initial call log
         const callLog = new CallLog({
@@ -66,11 +66,11 @@ router.post('/v1/call', authenticateApiKey, async (req, res) => {
 
             const twilioClient = twilio(sid, token);
             const call = await twilioClient.calls.create({
-                url: `${ngrokUrl}/api/v1/twiml/${client._id}/${callLog._id}`,
+                url: `${baseUrl}/api/v1/twiml/${client._id}/${callLog._id}`,
                 to: targetPhone,
                 from: fromNumber,
                 record: true,
-                recordingStatusCallback: `${ngrokUrl}/api/v1/recording/${callLog._id}`,
+                recordingStatusCallback: `${baseUrl}/api/v1/recording/${callLog._id}`,
                 recordingStatusCallbackEvent: ['completed']
             });
 
@@ -93,7 +93,7 @@ router.post('/v1/call', authenticateApiKey, async (req, res) => {
             const fromNumber = exotelCallerId || targetPhone; // This might fail if Exotel requires a verified Exophone, but we'll try
 
             const authString = Buffer.from(`${exotelApiKey}:${exotelApiToken}`).toString('base64');
-            const wssUrl = process.env.NGROK_URL.replace(/^https?:\/\//, 'wss://');
+            const wssUrl = baseUrl.replace(/^https?:\/\//, 'wss://');
             const streamUrl = `${wssUrl}/exotel-stream/${client._id}/${callLog._id}`;
 
             const params = new URLSearchParams();
@@ -141,7 +141,8 @@ router.post('/v1/twiml/:clientId/:callLogId', (req, res) => {
     const { clientId, callLogId } = req.params;
     
     // Strip http/https and use wss
-    const wssUrl = process.env.NGROK_URL.replace(/^https?:\/\//, 'wss://');
+    const baseUrl = process.env.BASE_URL || process.env.NGROK_URL || 'https://voxifyai-the-voicechat-boat.onrender.com';
+    const wssUrl = baseUrl.replace(/^https?:\/\//, 'wss://');
     
     const twiml = new twilio.twiml.VoiceResponse();
     // Connect the call to our WebSocket stream
