@@ -1,74 +1,90 @@
 const { createClient } = require('@deepgram/sdk');
 const Groq = require('groq-sdk');
-const fetch = require('node-fetch');
 const Client = require('../models/Client');
 const CallLog = require('../models/CallLog');
 
 function setupTwilioAIEngine(ws, clientData, callLogId) {
     const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    
-    const customQuestions = clientData.questions && clientData.questions.length > 0 
-        ? clientData.questions.map((q, i) => `${i+1}. ${q}`).join('\n')
-        : "1. Are you interested in learning about our new solutions?";
 
-    const SYSTEM_PROMPT = `You are a conversational AI voice agent on a live phone call representing a business in the ${clientData.industry} industry.
+    const customQuestions = clientData.questions && clientData.questions.length > 0
+        ? clientData.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')
+        : '1. Are you interested in learning about our new solutions?';
 
-Your ONLY task is to ask the user these questions sequentially:
+    const SYSTEM_PROMPT = `You are a voice AI agent on a live phone call for a ${clientData.industry || 'General'} business.
+
+Your ONLY job: ask these questions ONE AT A TIME, in order:
 ${customQuestions}
 
-CRITICAL RULES:
-1. DO NOT output a script, template, or placeholders like "[Wait for user]". You are on a live call. Only generate your exact spoken words for the current turn.
-2. Ask exactly ONE question per turn. Never ask two questions at once.
-3. Wait for the user to answer before moving to the next question.
-4. When they answer, give a short, natural acknowledgment (e.g., "Got it", "Nice") and ask the next question.
-5. Keep your tone relaxed, human, and conversational. Do not sound robotic. Do not go off-script.
-6. When ALL questions are answered, say a quick goodbye and MUST append the exact string "[CALL_ENDED]" at the end.`;
+STRICT RULES:
+- Each response = exactly ONE short sentence or question. Maximum 20 words.
+- After the user answers, give a brief acknowledgment ("Got it", "Thanks", "I see") then immediately ask the next question.
+- NEVER say placeholders like "[Wait for user]". You are live on a call.
+- NEVER ask two questions at once.
+- When ALL questions are answered, say a brief goodbye and append [CALL_ENDED].
+- If you cannot hear the user clearly, say "Sorry, I missed that. Could you repeat?" and re-ask the same question.`;
 
-    let deepgramLive = null;
     let streamSid = null;
-    let userTranscript = '';
-    let isProcessing = false;
+    let deepgramLive = null;
     let keepAlive = null;
     let startTime = Date.now();
     let messages = [{ role: 'system', content: SYSTEM_PROMPT }];
-    
-    let silenceTimeout = null;
-    let playbackTimeout = null;
-    let hardFallbackTimeout = null;
 
-    const onSilence = async () => {
-        if (isProcessing) return;
-        console.log('[Twilio] Silence detected. Prompting user.');
-        isProcessing = true;
-        userTranscript = '';
-        await handleAiResponse('[System: The user has been silent for too long. Gently say "Are you there?" and repeat your last question briefly.]');
-    };
+    // State
+    let isSpeaking = false;      // AI is currently playing audio
+    let isProcessing = false;     // AI is generating a response
+    let accumulatedTranscript = '';
+    let utteranceTimer = null;    // fires when user stops talking
+    let noSpeechTimer = null;     // fires if user never speaks (hard fallback)
 
-    const clearSilenceTimeout = () => {
-        if (silenceTimeout) clearTimeout(silenceTimeout);
-        if (playbackTimeout) clearTimeout(playbackTimeout);
-        if (hardFallbackTimeout) clearTimeout(hardFallbackTimeout);
-    };
+    // ─── Timers ───────────────────────────────────────────────────────────────
 
-    const startSilenceTimeout = () => {
-        clearSilenceTimeout();
-        // Fire after 4 seconds of no user speech
-        silenceTimeout = setTimeout(onSilence, 4000);
-    };
+    function clearAllTimers() {
+        if (utteranceTimer) { clearTimeout(utteranceTimer); utteranceTimer = null; }
+        if (noSpeechTimer) { clearTimeout(noSpeechTimer); noSpeechTimer = null; }
+    }
 
-    const startHardFallback = (delayMs) => {
-        // Hard fallback: fires 4 seconds AFTER the AI finishes speaking
-        // Ensures we never get stuck waiting forever
-        if (hardFallbackTimeout) clearTimeout(hardFallbackTimeout);
-        hardFallbackTimeout = setTimeout(() => {
-            if (!isProcessing) {
-                onSilence();
+    // Called after AI finishes speaking - starts listening window
+    function startListeningWindow() {
+        clearAllTimers();
+        // If user says nothing for 5 seconds after AI speaks, nudge them
+        noSpeechTimer = setTimeout(() => {
+            if (!isProcessing && !isSpeaking) {
+                console.log('[Twilio] No speech detected for 5s. Nudging user.');
+                isProcessing = true;
+                accumulatedTranscript = '';
+                handleAiResponse('[System: The user has not responded. Say "Are you there?" and briefly repeat your last question.]');
             }
-        }, delayMs + 4000);
-    };
+        }, 5000);
+    }
 
-    const setupDeepgram = () => {
+    // Called when user speech is detected - starts utterance-end countdown
+    function onUserSpeechDetected(transcript) {
+        // Cancel the no-speech fallback since user IS talking
+        if (noSpeechTimer) { clearTimeout(noSpeechTimer); noSpeechTimer = null; }
+
+        // Barge-in: cut AI audio immediately
+        if (isSpeaking && streamSid) {
+            ws.send(JSON.stringify({ event: 'clear', streamSid }));
+            isSpeaking = false;
+        }
+
+        // Start a 1.5s utterance-end timer (resets with each new word)
+        if (utteranceTimer) clearTimeout(utteranceTimer);
+        utteranceTimer = setTimeout(() => {
+            if (accumulatedTranscript.trim().length > 0 && !isProcessing) {
+                const userMessage = accumulatedTranscript.trim();
+                accumulatedTranscript = '';
+                console.log(`[Twilio] User said: "${userMessage}"`);
+                isProcessing = true;
+                handleAiResponse(userMessage);
+            }
+        }, 1500);
+    }
+
+    // ─── Deepgram Setup ───────────────────────────────────────────────────────
+
+    function setupDeepgram() {
         deepgramLive = deepgram.listen.live({
             model: 'nova-2',
             language: 'en-IN',
@@ -76,214 +92,205 @@ CRITICAL RULES:
             sample_rate: 8000,
             smart_format: true,
             interim_results: true,
-            endpointing: 800,
+            endpointing: 300,       // detect end of speech after 300ms silence
+            utterance_end_ms: 1000, // fire UtteranceEnd after 1s of silence
         });
 
         deepgramLive.on('open', () => {
-            console.log(`[Twilio] Deepgram STT connection opened for client: ${clientData.emailOrPhone}`);
+            console.log('[Twilio] Deepgram connected');
             keepAlive = setInterval(() => {
                 if (deepgramLive && deepgramLive.getReadyState() === 1) {
                     deepgramLive.keepAlive();
                 }
-            }, 10 * 1000);
+            }, 8000);
         });
 
-        deepgramLive.on('Results', async (data) => {
-            const transcript = data.channel.alternatives[0].transcript;
-            
-            if (transcript && transcript.trim().length > 0) {
-                clearSilenceTimeout();
-                if (streamSid) {
-                    // Barge-in: stop any currently playing audio immediately
-                    ws.send(JSON.stringify({ event: 'clear', streamSid: streamSid }));
-                }
-                isProcessing = false;
+        deepgramLive.on('Results', (data) => {
+            const transcript = data?.channel?.alternatives?.[0]?.transcript;
+            if (!transcript || !transcript.trim()) return;
+
+            // If AI is speaking and user talks, register barge-in
+            if (isSpeaking) {
+                onUserSpeechDetected(transcript);
             }
 
-            if (transcript && data.is_final) {
-                userTranscript += ' ' + transcript;
-            }
+            // Accumulate interim results
+            if (!data.is_final) return;
 
-            if (data.speech_final) {
-                if (userTranscript.trim().length > 0) {
-                    if (isProcessing) {
-                        userTranscript = '';
-                        return;
-                    }
-                    isProcessing = true;
+            accumulatedTranscript += ' ' + transcript.trim();
+            console.log(`[Twilio] Interim transcript: "${transcript}"`);
+            onUserSpeechDetected(transcript);
+        });
 
-                    const finalUserMessage = userTranscript.trim();
-                    userTranscript = ''; 
-                    
-                    console.log(`[Twilio] User: ${finalUserMessage}`);
-                    await handleAiResponse(finalUserMessage);
-                } else {
-                    if (!isProcessing) {
-                        startSilenceTimeout();
-                    }
-                }
+        deepgramLive.on('UtteranceEnd', () => {
+            console.log('[Twilio] UtteranceEnd received');
+            if (accumulatedTranscript.trim().length > 0 && !isProcessing) {
+                if (utteranceTimer) clearTimeout(utteranceTimer);
+                const userMessage = accumulatedTranscript.trim();
+                accumulatedTranscript = '';
+                isProcessing = true;
+                console.log(`[Twilio] Processing utterance: "${userMessage}"`);
+                handleAiResponse(userMessage);
             }
         });
 
-        deepgramLive.on('error', (error) => {
-            console.error('[Twilio] Deepgram STT error:', error);
+        deepgramLive.on('error', (err) => {
+            console.error('[Twilio] Deepgram error:', err);
         });
-        
+
         deepgramLive.on('close', () => {
-            console.log('[Twilio] Deepgram STT connection closed');
+            console.log('[Twilio] Deepgram closed');
             if (keepAlive) clearInterval(keepAlive);
-            clearSilenceTimeout();
         });
-    };
+    }
 
     setupDeepgram();
 
+    // ─── AI Response Handler ──────────────────────────────────────────────────
+
     async function handleAiResponse(userMessage) {
         try {
+            clearAllTimers();
+
             if (userMessage) {
                 messages.push({ role: 'user', content: userMessage });
             }
-            
+
             const chatCompletion = await groq.chat.completions.create({
-                messages: messages,
+                messages,
                 model: 'meta-llama/llama-4-scout-17b-16e-instruct',
                 temperature: 0.3,
-                max_tokens: 200,
+                max_tokens: 120,
             });
 
-            let aiResponseText = chatCompletion.choices[0].message.content;
-            
-            // Strip out <think> tags for models that output reasoning
-            aiResponseText = aiResponseText.replace(/<think>[\s\S]*?(?:<\/think>|$)\s*/gi, '').trim();
+            let aiText = chatCompletion.choices[0].message.content || '';
+            // Strip reasoning tags
+            aiText = aiText.replace(/<think>[\s\S]*?(?:<\/think>|$)\s*/gi, '').trim();
 
-            if (!aiResponseText) {
+            if (!aiText) {
                 isProcessing = false;
-                startSilenceTimeout();
+                startListeningWindow();
                 return;
             }
 
             let callEnded = false;
-            if (aiResponseText.includes('[CALL_ENDED]')) {
+            if (aiText.includes('[CALL_ENDED]')) {
                 callEnded = true;
-                aiResponseText = aiResponseText.replace('[CALL_ENDED]', '').trim();
+                aiText = aiText.replace('[CALL_ENDED]', '').trim();
             }
 
-            console.log(`[Twilio] AI: ${aiResponseText}`);
-            messages.push({ role: 'assistant', content: aiResponseText });
+            console.log(`[Twilio] AI: ${aiText}`);
+            messages.push({ role: 'assistant', content: aiText });
 
-            // Fetch TTS from Deepgram specifying mu-law 8000Hz for Twilio
-            const ttsResponse = await global.fetch('https://api.deepgram.com/v1/speak?model=aura-luna-en&encoding=mulaw&sample_rate=8000', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Token ${process.env.DEEPGRAM_API_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: aiResponseText })
-            });
-
-            if (ttsResponse.ok) {
-                const arrayBuffer = await ttsResponse.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-                const base64Audio = buffer.toString('base64');
-                
-                if (streamSid) {
-                    ws.send(JSON.stringify({
-                        event: 'clear',
-                        streamSid: streamSid
-                    }));
-                    ws.send(JSON.stringify({
-                        event: 'media',
-                        streamSid: streamSid,
-                        media: { payload: base64Audio }
-                    }));
+            // TTS via Deepgram (mulaw 8000Hz for Twilio)
+            const ttsRes = await global.fetch(
+                'https://api.deepgram.com/v1/speak?model=aura-luna-en&encoding=mulaw&sample_rate=8000',
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Token ${process.env.DEEPGRAM_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: aiText }),
                 }
+            );
 
-                // Estimate audio duration to properly time the silence timeout
-                const charCount = aiResponseText.length;
-                const estDurationMs = Math.min(Math.max(1000, (charCount / 15) * 1000), 10000); 
+            isProcessing = false;
 
-                isProcessing = false; // Allow immediate barge-in!
+            if (!ttsRes.ok) {
+                console.error('[Twilio] TTS failed:', await ttsRes.text());
+                startListeningWindow();
+                return;
+            }
 
-                playbackTimeout = setTimeout(() => {
-                    startSilenceTimeout();
-                }, estDurationMs);
+            const arrayBuffer = await ttsRes.arrayBuffer();
+            const base64Audio = Buffer.from(arrayBuffer).toString('base64');
 
-                // Hard fallback: after AI finishes + 4 seconds, force move forward no matter what
-                startHardFallback(estDurationMs);
+            if (streamSid) {
+                // Clear any in-flight audio first
+                ws.send(JSON.stringify({ event: 'clear', streamSid }));
+                // Send new audio
+                ws.send(JSON.stringify({
+                    event: 'media',
+                    streamSid,
+                    media: { payload: base64Audio },
+                }));
+                isSpeaking = true;
+            }
 
-                if (callEnded) {
-                    setTimeout(() => {
-                        processEndCall();
-                    }, estDurationMs + 2000); // End call after speaking finishes
+            // Estimate how long audio will play (chars / 15 words-per-sec)
+            const estDurationMs = Math.min(Math.max(1500, (aiText.length / 15) * 1000), 12000);
+
+            setTimeout(() => {
+                isSpeaking = false;
+                if (!callEnded) {
+                    startListeningWindow();
                 }
-            } else {
-                console.error('[Twilio] TTS error:', await ttsResponse.text());
-                isProcessing = false;
+            }, estDurationMs);
+
+            if (callEnded) {
+                setTimeout(() => processEndCall(), estDurationMs + 1500);
             }
 
-        } catch (error) {
-            console.error('Error generating AI response:', error.message || error);
-            if (error.status === 429) {
-                console.error('[RateLimit] Daily token limit reached. Stopping retries.');
-                isProcessing = false;
-                clearSilenceTimeout();
-            } else {
-                isProcessing = false;
-                startSilenceTimeout();
-            }
+        } catch (err) {
+            console.error('[Twilio] handleAiResponse error:', err.message);
+            isProcessing = false;
+            isSpeaking = false;
+            startListeningWindow();
         }
     }
+
+    // ─── End Call & Data Extraction ───────────────────────────────────────────
 
     let callProcessed = false;
     async function processEndCall() {
         if (callProcessed) return;
         callProcessed = true;
-        console.log(`[Twilio] Processing end call logic, Stream SID: ${streamSid}`);
-        clearSilenceTimeout();
-        if (deepgramLive && deepgramLive.getReadyState() === 1) {
-            deepgramLive.finish();
-        }
-        
-        // Run extraction
+        console.log('[Twilio] Processing end call');
+        clearAllTimers();
+        if (deepgramLive && deepgramLive.getReadyState() === 1) deepgramLive.finish();
+
         const durationMinutes = Math.max(1, Math.ceil((Date.now() - startTime) / 60000));
-        const fullConversationTranscript = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-        
-        const extractionPrompt = `You are a data extraction AI. Extract the answers to the following questions from this transcript. Return ONLY a valid JSON object where keys are the exact questions and values are the extracted answers (or "Not answered" if skipped).
-        
-Questions to extract:
+        const fullTranscript = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+
+        const extractionPrompt = `Extract answers from this call transcript. Return ONLY valid JSON where keys are the questions and values are the answers (or "Not answered").
+
+Questions:
 ${customQuestions}
 
 Transcript:
-${fullConversationTranscript}
-`;
+${fullTranscript}`;
+
         let extractedData = {};
         try {
             const extraction = await groq.chat.completions.create({
                 messages: [{ role: 'user', content: extractionPrompt }],
                 model: 'llama-3.1-8b-instant',
                 temperature: 0,
-                response_format: { type: "json_object" }
+                response_format: { type: 'json_object' },
             });
             extractedData = JSON.parse(extraction.choices[0].message.content);
         } catch (e) {
-            console.error("[Twilio] Extraction error:", e);
+            console.error('[Twilio] Extraction error:', e.message);
         }
 
-        clientData.trialMinutes = Math.max(0, clientData.trialMinutes - durationMinutes);
-        await Client.findByIdAndUpdate(clientData._id, { trialMinutes: clientData.trialMinutes });
+        await Client.findByIdAndUpdate(clientData._id, {
+            trialMinutes: Math.max(0, clientData.trialMinutes - durationMinutes),
+        });
 
         if (callLogId) {
             await CallLog.findByIdAndUpdate(callLogId, {
                 status: 'Completed',
-                transcript: fullConversationTranscript,
-                extractedData: extractedData,
-                durationMinutes: durationMinutes
+                transcript: fullTranscript,
+                extractedData,
+                durationMinutes,
             });
         }
-        
-        // Close WS to drop Twilio stream
+
         setTimeout(() => ws.close(), 1000);
     }
+
+    // ─── WebSocket Events ─────────────────────────────────────────────────────
 
     ws.on('message', async (message) => {
         try {
@@ -291,20 +298,16 @@ ${fullConversationTranscript}
 
             if (data.event === 'start') {
                 streamSid = data.start.streamSid;
-                console.log(`[Twilio] Call started, Stream SID: ${streamSid}`);
-                // Let the AI generate the first question
+                console.log(`[Twilio] Stream started: ${streamSid}`);
                 if (!isProcessing) {
                     isProcessing = true;
-                    handleAiResponse('[System: The call has just connected. Greet the user and ask the FIRST question on your list.]');
+                    handleAiResponse('[System: The call just connected. Greet the user warmly and ask the FIRST question.]');
                 }
             }
 
             if (data.event === 'media') {
                 if (deepgramLive && deepgramLive.getReadyState() === 1) {
-                    // Twilio sends base64 mu-law audio
-                    const b64Data = data.media.payload;
-                    const audioBuffer = Buffer.from(b64Data, 'base64');
-                    deepgramLive.send(audioBuffer);
+                    deepgramLive.send(Buffer.from(data.media.payload, 'base64'));
                 }
             }
 
@@ -312,16 +315,14 @@ ${fullConversationTranscript}
                 await processEndCall();
             }
         } catch (e) {
-            console.error('[Twilio] WS Message Error:', e);
+            // ignore non-JSON messages
         }
     });
 
     ws.on('close', () => {
         console.log('[Twilio] WebSocket closed');
-        if (deepgramLive && deepgramLive.getReadyState() === 1) {
-            deepgramLive.finish();
-        }
-        if (keepAlive) clearInterval(keepAlive);
+        clearAllTimers();
+        processEndCall();
     });
 }
 
