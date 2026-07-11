@@ -29,6 +29,7 @@ HOW TO RESPOND:
     let userTranscript = '';
     let audioBuffer = [];
     let silenceTimer = null;
+    let isFinalProcessTimer = null; // fires if speech_final never comes
     let startTime = Date.now();
 
     const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
@@ -37,6 +38,7 @@ HOW TO RESPOND:
 
     function clearSilenceTimer() {
         if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+        if (isFinalProcessTimer) { clearTimeout(isFinalProcessTimer); isFinalProcessTimer = null; }
     }
 
     function startSilenceTimer(delayMs = 2500) {
@@ -193,10 +195,24 @@ HOW TO RESPOND:
             if (transcript && data.is_final && state === 'listening') {
                 console.log(`[STT is_final] "${transcript}"`);
                 userTranscript += ' ' + transcript;
+
+                // Fallback: if speech_final never fires, process after 2s
+                if (isFinalProcessTimer) clearTimeout(isFinalProcessTimer);
+                isFinalProcessTimer = setTimeout(async () => {
+                    const trimmed = userTranscript.trim();
+                    if (trimmed.length > 0 && state === 'listening') {
+                        state = 'processing';
+                        userTranscript = '';
+                        clearSilenceTimer();
+                        console.log(`[2s fallback] Processing: "${trimmed}"`);
+                        await handleAiResponse(trimmed);
+                    }
+                }, 2000);
             }
 
             // Process when Deepgram says user has finished speaking
             if (data.speech_final) {
+                if (isFinalProcessTimer) { clearTimeout(isFinalProcessTimer); isFinalProcessTimer = null; }
                 const trimmed = userTranscript.trim();
                 console.log(`[STT speech_final] state=${state}, transcript="${trimmed}"`);
                 if (trimmed.length > 0 && state === 'listening') {
