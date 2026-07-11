@@ -52,8 +52,6 @@ mongoose.connect(MONGO_URI)
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_voxify_key_2026';
 
 wss.on('connection', async (ws, req) => {
-    // Handle Twilio Media Streams (Temporarily Disabled for BYOT Refactor)
-    /*
     if (req.url.startsWith('/twilio-stream/')) {
         const parts = req.url.split('/');
         const clientId = parts[2];
@@ -65,9 +63,11 @@ wss.on('connection', async (ws, req) => {
             } else {
                 ws.close(1008, "Account Suspended");
             }
+        } catch (e) {
+            ws.close();
+        }
         return;
     }
-    */
 
     // Handle Exotel Voice Bot Streams
     if (req.url.startsWith('/exotel-stream/')) {
