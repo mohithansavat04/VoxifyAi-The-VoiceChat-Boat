@@ -35,22 +35,37 @@ CRITICAL RULES:
     
     let silenceTimeout = null;
     let playbackTimeout = null;
+    let hardFallbackTimeout = null;
 
     const onSilence = async () => {
         if (isProcessing) return;
-        console.log('[Twilio] Silence detected for 2.5 seconds. Prompting user.');
+        console.log('[Twilio] Silence detected. Prompting user.');
         isProcessing = true;
-        await handleAiResponse('[System: The user has been silent. Gently ask if they are still there or repeat your last question.]');
+        userTranscript = '';
+        await handleAiResponse('[System: The user has been silent for too long. Gently say "Are you there?" and repeat your last question briefly.]');
     };
 
     const clearSilenceTimeout = () => {
         if (silenceTimeout) clearTimeout(silenceTimeout);
         if (playbackTimeout) clearTimeout(playbackTimeout);
+        if (hardFallbackTimeout) clearTimeout(hardFallbackTimeout);
     };
 
     const startSilenceTimeout = () => {
         clearSilenceTimeout();
-        silenceTimeout = setTimeout(onSilence, 2500);
+        // Fire after 4 seconds of no user speech
+        silenceTimeout = setTimeout(onSilence, 4000);
+    };
+
+    const startHardFallback = (delayMs) => {
+        // Hard fallback: fires 4 seconds AFTER the AI finishes speaking
+        // Ensures we never get stuck waiting forever
+        if (hardFallbackTimeout) clearTimeout(hardFallbackTimeout);
+        hardFallbackTimeout = setTimeout(() => {
+            if (!isProcessing) {
+                onSilence();
+            }
+        }, delayMs + 4000);
     };
 
     const setupDeepgram = () => {
@@ -192,6 +207,9 @@ CRITICAL RULES:
                 playbackTimeout = setTimeout(() => {
                     startSilenceTimeout();
                 }, estDurationMs);
+
+                // Hard fallback: after AI finishes + 4 seconds, force move forward no matter what
+                startHardFallback(estDurationMs);
 
                 if (callEnded) {
                     setTimeout(() => {
