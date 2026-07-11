@@ -75,7 +75,13 @@ wss.on('connection', async (ws, req) => {
         const clientId = parts[2];
         const callLogId = parts[3] || null; // Exotel might not generate call log first if inbound
         try {
-            const client = await Client.findById(clientId);
+            let client = null;
+            if (clientId === 'demo') {
+                client = await Client.findOne({ telecomProvider: 'exotel' });
+            } else {
+                client = await Client.findById(clientId);
+            }
+            
             if (client && client.status !== 'Suspended') {
                 setupExotelAIEngine(ws, client, callLogId);
             } else {
